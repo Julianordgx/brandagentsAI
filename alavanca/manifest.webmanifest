@@ -1,0 +1,12 @@
+{
+  "name": "Alavanca Dinâmica",
+  "short_name": "Alavanca",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#06100a",
+  "theme_color": "#07110b",
+  "description": "Controle simples e inteligente de alavancagem com odd variável, stake dinâmica e visualização da banca.",
+  "icons": [{"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
