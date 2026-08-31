@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#07110b" />
+  <meta name="description" content="Controle simples e inteligente de alavancagem com odd variável, stake dinâmica e visualização da banca." />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Alavanca" />
+  <title>Alavanca Dinâmica</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">CONTROLE DE ALAVANCAGEM</p>
+        <div class="brand-row"><h1 id="brandTitle">Alavanca Dinâmica</h1><span class="version-pill">V3.2</span></div>
+      </div>
+      <button id="themeBtn" class="icon-btn" aria-label="Alternar tema" title="Alternar tema">◐</button>
+    </header>
+
+    <main>
+      <section id="dashboard" class="view active">
+        <article class="hero-card card">
+          <div class="hero-top">
+            <div>
+              <span class="muted-label">Banca atual</span>
+              <strong id="currentBankroll" class="money-xl">R$ 100,00</strong>
+              <span id="heroTarget" class="hero-target">Meta R$ 500,00</span>
+            </div>
+            <span id="statusBadge" class="badge good">em andamento</span>
+          </div>
+          <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+          <div class="progress-meta"><span id="progressText">0,0% da meta</span><span id="stepText">Etapa 1 de 30</span></div>
+        </article>
+
+        <div class="summary-grid">
+          <article class="card metric"><span>Resultado</span><strong id="pnlText">R$ 0,00</strong></article>
+          <article class="card metric"><span>Restantes</span><strong id="remainingText">30</strong></article>
+          <article class="card metric"><span>Acerto</span><strong id="hitRateText">0,0%</strong></article>
+          <article class="card metric"><span>Drawdown</span><strong id="drawdownText">0,0%</strong></article>
+        </div>
+
+        <article class="card chart-card">
+          <div class="section-head">
+            <div><p class="eyebrow">EVOLUÇÃO</p><h2>Banca ao longo do ciclo</h2></div>
+            <strong id="chartDelta" class="chart-delta">R$ 0,00</strong>
+          </div>
+          <div id="bankChart" class="svg-chart" aria-label="Gráfico de evolução da banca"></div>
+          <div class="chart-meta"><span id="chartStart">Início R$ 100,00</span><span id="chartNow">Atual R$ 100,00</span><span id="chartTarget">Meta R$ 500,00</span></div>
+        </article>
+
+        <article class="card result-chart-card">
+          <div class="section-head"><div><p class="eyebrow">RESULTADOS</p><h2>GREEN x RED</h2></div><strong id="recordText">0 x 0</strong></div>
+          <div class="result-track"><div id="greenBar" class="result-segment green"></div><div id="redBar" class="result-segment red"></div></div>
+          <div class="result-legend"><span><i class="dot green"></i><b id="greenCount">0</b> GREEN</span><span><i class="dot red"></i><b id="redCount">0</b> RED</span><span><i class="dot neutral"></i><b id="voidCount">0</b> anuladas</span></div>
+        </article>
+
+        <article class="card next-card">
+          <div class="section-head"><div><p class="eyebrow">PRÓXIMO PASSO</p><h2 id="nextTitle">Pronto para a próxima entrada</h2></div></div>
+          <p id="nextHint" class="body-copy">Informe apenas a odd real. A stake e a meta da etapa são calculadas automaticamente.</p>
+          <button id="newEntryBtn" class="btn success full" data-go="entry">Nova entrada</button>
+        </article>
+      </section>
+
+      <section id="entry" class="view">
+        <article class="card entry-card">
+          <div class="section-head">
+            <div><p class="eyebrow">ENTRADA ATUAL</p><h2 id="entryStepTitle">Etapa 1 de 30</h2></div>
+            <button class="text-btn" data-go="dashboard">Cancelar</button>
+          </div>
+
+          <label class="field primary-field">
+            <span>Odd real</span>
+            <input id="entryOdd" type="text" inputmode="decimal" autocomplete="off" placeholder="Ex.: 1,72" autofocus />
+          </label>
+
+          <div id="smartMessage" class="smart-message neutral">Digite uma odd maior que 1,00 para calcular.</div>
+
+          <div class="stake-focus">
+            <span>Stake sugerida</span>
+            <strong id="suggestedStake">R$ 0,00</strong>
+            <small id="stakeContext">Calculada pela meta e pelo limite de exposição.</small>
+          </div>
+
+          <div class="entry-metrics compact">
+            <div><span>Meta da etapa</span><strong id="nextTarget">R$ 0,00</strong></div>
+            <div><span>Se der GREEN</span><strong id="projectedBank">R$ 0,00</strong></div>
+            <div><span>Exposição</span><strong id="exposureText">0,0%</strong></div>
+          </div>
+
+          <div class="result-actions primary-results">
+            <button id="greenBtn" class="btn success result-btn" disabled>GREEN</button>
+            <button id="redBtn" class="btn danger result-btn" disabled>RED</button>
+          </div>
+          <button id="voidBtn" class="btn secondary full void-btn" disabled>Anulada</button>
+
+          <details class="entry-options">
+            <summary>Mais opções</summary>
+            <div class="entry-options-body">
+              <label class="field"><span>Descrição <em>opcional</em></span><input id="entryLabel" type="text" maxlength="80" placeholder="Ex.: Jogo / mercado" /></label>
+              <label class="field"><span>Stake manual <em>opcional</em></span><input id="usedStake" type="text" inputmode="decimal" autocomplete="off" placeholder="Calculada automaticamente" /><small id="stakeHint">A stake sugerida respeita o limite de exposição.</small></label>
+              <button id="resetStakeBtn" class="btn secondary full small">Voltar para stake sugerida</button>
+            </div>
+          </details>
+        </article>
+      </section>
+
+      <section id="history" class="view">
+        <article class="card">
+          <div class="section-head history-head">
+            <div><p class="eyebrow">HISTÓRICO</p><h2>Entradas do ciclo</h2></div>
+            <button id="undoBtn" class="btn secondary small">Desfazer última</button>
+          </div>
+          <div id="historyList" class="history-list"></div>
+        </article>
+      </section>
+
+      <section id="settings" class="view">
+        <article class="card">
+          <div class="section-head"><div><p class="eyebrow">CICLO</p><h2>Configuração essencial</h2></div></div>
+          <div class="settings-grid">
+            <label class="field"><span>Banca inicial (R$)</span><input id="initialBankroll" type="number" min="0.01" step="0.01" /></label>
+            <label class="field"><span>Meta final (R$)</span><input id="targetBankroll" type="number" min="0.02" step="0.01" /></label>
+            <label class="field"><span>Total de entradas</span><input id="plannedEntries" type="number" min="1" max="1000" step="1" /></label>
+            <label class="field"><span>Exposição máxima por entrada (%)</span><input id="maxExposure" type="number" min="0.1" max="100" step="0.1" /></label>
+          </div>
+          <p class="settings-note">A meta deve ser maior que a banca inicial. GREEN e RED consomem etapa; anulada não consome.</p>
+          <button id="saveSettingsBtn" class="btn success full">Salvar e recalcular</button>
+        </article>
+
+        <article class="card compact-card">
+          <details>
+            <summary>Ajustar banca</summary>
+            <p class="body-copy">Registre depósito ou retirada sem consumir uma etapa.</p>
+            <label class="field"><span>Valor (R$)</span><input id="adjustmentAmount" type="number" step="0.01" placeholder="Ex.: 50 ou -20" /></label>
+            <label class="field"><span>Motivo <em>opcional</em></span><input id="adjustmentReason" type="text" maxlength="80" placeholder="Ex.: Retirada de lucro" /></label>
+            <button id="addAdjustmentBtn" class="btn secondary full">Registrar ajuste</button>
+          </details>
+        </article>
+
+        <article class="card compact-card">
+          <details>
+            <summary>Dados e segurança</summary>
+            <div class="stack-actions">
+              <button id="auditBtn" class="btn secondary full">Verificar integridade</button>
+              <button id="downloadBackupBtn" class="btn secondary full">Baixar backup</button>
+              <label class="file-btn btn secondary full">Importar backup<input id="importFile" type="file" accept="application/json,.json" hidden /></label>
+              <button id="exportCsvBtn" class="btn secondary full">Exportar histórico CSV</button>
+              <button id="resetBtn" class="btn danger-outline full">Zerar ciclo</button>
+            </div>
+            <div id="auditResult" class="smart-message neutral">Nenhuma verificação executada.</div>
+          </details>
+        </article>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Navegação principal">
+      <button class="nav-item active" data-go="dashboard"><span>⌂</span><b>Painel</b></button>
+      <button class="nav-item" data-go="entry"><span>＋</span><b>Entrada</b></button>
+      <button class="nav-item" data-go="history"><span>≡</span><b>Histórico</b></button>
+      <button class="nav-item" data-go="settings"><span>⚙</span><b>Ajustes</b></button>
+    </nav>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </div>
+
+  <script src="core.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
